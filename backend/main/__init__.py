@@ -88,7 +88,13 @@ def create_app():
 
 
     #Cargar tiempo de expiración de los tokens
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES'))
+    expires_raw = os.getenv('JWT_ACCESS_TOKEN_EXPIRES')
+    try:
+        expires_seconds = int(expires_raw) if expires_raw is not None else 3600
+    except ValueError:
+        app.logger.warning('JWT_ACCESS_TOKEN_EXPIRES invalid; defaulting to 3600 seconds')
+        expires_seconds = 3600
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = expires_seconds
 
     jwt.init_app(app)
 
