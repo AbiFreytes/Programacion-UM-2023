@@ -42,7 +42,4 @@ El backend lee las variables desde un archivo `.env` en la carpeta `backend`. Si
 ```
 JWT_SECRET_KEY=una_clave_segura
 JWT_ACCESS_TOKEN_EXPIRES=3600
-# Opcional: personaliza la ubicación de la base (ambos valores deben coexistir si se modifican)
-DATABASE_PATH=C:\\Users\\tu_usuario\\AppData\\Local\\GymApp
-DATABASE_NAME=gym.sqlite
 ```
