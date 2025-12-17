@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from flask import Flask
 from dotenv import load_dotenv
@@ -32,16 +33,35 @@ def create_app():
     app = Flask(__name__)
 
     #variables de entorno
-    load_dotenv()
+    env_path = Path(__file__).resolve().parent.parent / '.env'
+    load_dotenv(env_path)
 
     #Si no existe el archivo de base de datos crearlo (solo válido si se utiliza SQLite)
-    if not os.path.exists(os.getenv('DATABASE_PATH')+os.getenv('DATABASE_NAME')):
-        os.mknod(os.getenv('DATABASE_PATH')+os.getenv('DATABASE_NAME'))
+    default_db_dir = Path(__file__).resolve().parent
+
+    def _clean_env(value: str | None) -> str | None:
+        """Sanitize environment values: strip whitespace and treat blanks as missing."""
+
+        if value is None:
+            return None
+
+        trimmed = value.strip()
+        return trimmed or None
+
+    env_database_path = _clean_env(os.getenv('DATABASE_PATH'))
+    database_path = Path(env_database_path).expanduser() if env_database_path else default_db_dir
+
+    database_name = _clean_env(os.getenv('DATABASE_NAME')) or 'database.sqlite'
+
+    database_file = (database_path / database_name).resolve()
+
+    database_file.parent.mkdir(parents=True, exist_ok=True)
+    database_file.touch(exist_ok=True)
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Url de configuración de base de datos
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////'+os.getenv('DATABASE_PATH')+os.getenv('DATABASE_NAME')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{database_file.as_posix()}"
 
     db.init_app(app)
 
@@ -51,7 +71,7 @@ def create_app():
     api.add_resource(resources.UsuariosResource, '/usuarios')
 
     api.add_resource(resources.UsuarioResource, '/usuario/<id>')
-    
+
     api.add_resource(resources.UsuarioActualResource, '/usuario/actual')
 
     api.add_resource(resources.UsuariosAlumnosResource, '/alumnos')
@@ -69,9 +89,9 @@ def create_app():
     api.add_resource(resources.ProfesorByUsuarioResource, '/profesor/usuario/<id_usuario>')
 
     api.add_resource(resources.PlanificacionesResource, '/planificaciones')
-    
+
     api.add_resource(resources.PlanificacionResource, '/planificaciones/<id>')
-    
+
     api.add_resource(resources.PlanificacionesByAlumnoResource, '/planificaciones/alumno/<id_alumno>')
 
     #Cargar la aplicacion en la API de Flask Restful
@@ -81,9 +101,15 @@ def create_app():
     #Cargar clave secreta
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
-    
+
     #Cargar tiempo de expiración de los tokens
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES'))
+    expires_raw = os.getenv('JWT_ACCESS_TOKEN_EXPIRES')
+    try:
+        expires_seconds = int(expires_raw) if expires_raw is not None else 3600
+    except ValueError:
+        app.logger.warning('JWT_ACCESS_TOKEN_EXPIRES invalid; defaulting to 3600 seconds')
+        expires_seconds = 3600
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = expires_seconds
 
     jwt.init_app(app)
 
@@ -91,7 +117,7 @@ def create_app():
     #Importar blueprint
     app.register_blueprint(routes.auth)
 
-     #Configuración de mail
+    #Configuración de mail
     app.config['MAIL_HOSTNAME'] = os.getenv('MAIL_HOSTNAME')
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
     app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
