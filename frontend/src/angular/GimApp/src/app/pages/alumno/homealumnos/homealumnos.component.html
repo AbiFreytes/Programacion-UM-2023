@@ -1,0 +1,99 @@
+<app-fondo></app-fondo>
+<app-nav></app-nav>
+<div class="container mt-5 ">
+    <div class="row">
+        <h1 class="welcome-text">Hola {{ nombreUsuario }}</h1>
+    </div>
+    <div class="row">
+        <h2 class="welcome-text2">¡Que tengas un excelente día de entrenamiento!</h2>
+    </div>
+</div>
+
+<!-- Separador visual -->
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="separator-line"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Planificaciones del alumno -->
+<div id="cards" class="container">
+  <div class="row">
+    <div class="d-flex">
+      <div class="p-2 flex-grow-1 texto-home">Mis Planificaciones</div>
+    </div>
+  </div>
+  
+  <!-- Loading state -->
+  <div *ngIf="loading" class="row">
+    <div class="col-12 text-center">
+      <div class="spinner-border text-light" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- No planificaciones -->
+  <div *ngIf="!loading && planificaciones.length === 0" class="row">
+    <div class="col-12">
+      <div class="alert alert-info">
+        <i class="fas fa-calendar-alt fa-3x"></i>
+        <h5>No tienes planificaciones asignadas</h5>
+        <p>Contacta con tu profesor para que te asigne una planificación de ejercicios personalizada.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Planificaciones disponibles -->
+  <div *ngIf="!loading && planificaciones.length > 0" class="row">
+    <div class="col-12">
+      <div class="planificaciones-list">
+        <div *ngFor="let planificacion of planificaciones" class="planificacion-item">
+          <div class="planificacion-date-header" (click)="isMobile() ? togglePlanificacion(planificacion.id) : null" [class.clickable]="isMobile()">
+            <h4 class="planificacion-date-title">
+              <i class="fas fa-calendar-day"></i>
+              Planificación del {{ planificacion.fecha_creacion | date:'dd/MM/yyyy' }}
+            </h4>
+            <div class="planificacion-profesor">
+              <small>
+                <i class="fas fa-user-tie"></i>
+                {{ planificacion.profesor?.usuario?.nombre }} {{ planificacion.profesor?.usuario?.apellido }}
+              </small>
+            </div>
+            <div *ngIf="isMobile()" class="expand-button">
+              <i class="fas" [class.fa-chevron-down]="!isPlanificacionExpanded(planificacion.id)" [class.fa-chevron-up]="isPlanificacionExpanded(planificacion.id)"></i>
+            </div>
+          </div>
+          
+          <div class="planificacion-card" [class.mobile-hidden]="isMobile() && !isPlanificacionExpanded(planificacion.id)">
+          
+          <div class="planificacion-days">
+            <div *ngFor="let day of ['lunes', 'martes', 'miercoles', 'jueves', 'viernes']" 
+                 class="day-item" 
+                 [class.today]="day === getCurrentDay()"
+                 [class.has-content]="planificacion[day] && planificacion[day].trim() !== ''">
+              <div class="day-header">
+                <span class="day-name">
+                  <i class="fas fa-dumbbell" *ngIf="planificacion[day] && planificacion[day].trim() !== ''"></i>
+                  <i class="fas fa-minus" *ngIf="!planificacion[day] || planificacion[day].trim() === ''"></i>
+                  {{ getDayName(day) }}
+                </span>
+              </div>
+              <div class="day-content">
+                <div class="day-exercise" 
+                     [class.empty]="!planificacion[day] || planificacion[day].trim() === ''">
+                  {{ planificacion[day] && planificacion[day].trim() !== '' ? planificacion[day] : 'Sin ejercicios' }}
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-footer></app-footer>

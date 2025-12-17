@@ -1,0 +1,77 @@
+<app-fondo></app-fondo>
+<app-nav></app-nav>
+<div class="container text-center mt-5 position-relative">
+    <div class="row mb-3">
+        <button class="btn btn-secondary btn-volver" onclick="window.history.back()"><i class="fa-solid fa-chevron-left"></i></button>
+        <p class="p-perfil text-center">
+            Nombre del Profesor
+        </p>
+    </div>
+    
+    <img src="assets/user.png" alt="Foto de perfil" class="rounded-circle img-fluid" style="width: 100px; height: 100px; z-index: 2;">
+</div>
+
+<div class="container mt-5 overflow-auto mb-5">
+
+
+    <form [formGroup]="createForm" (ngSubmit)="createUser()">
+        <div class="mb-3">
+            
+                <label class="label" for="floatingInputValue2">Nombre</label>
+                <input type="text" formControlName="nombre" class="form-control form-control1  fondo-oscuro text-white borde-editar2" id="floatingInputValue23" placeholder="Tu Nombre" value="Abril">
+          
+        </div>
+
+        <div class="mb-3">
+            <label class="label" for="floatingInputValue2">Apellido</label>
+            <input type="text" formControlName="apellido" class="form-control form-control1 fondo-oscuro text-white borde-editar2" id="floatingInputValue23" placeholder="Tu Apellido" value="Freytes">
+        </div>
+        <div class="mb-3">
+            <label class="label" for="floatingInputValue2">Email</label>
+            <input type="email" formControlName="email" class="form-control form-control1 fondo-oscuro text-white borde-editar2" id="floatingInputValue23" placeholder="Tu Email" value="abrilfreytes@gmail.com">
+        </div>
+        <div class="mb-3">
+            <label class="label" for="floatingInputValue2">Edad</label>
+            <input type="number" formControlName="edad" class="form-control form-control1 fondo-oscuro text-white borde-editar2" id="floatingInputValue23" placeholder="Tu Edad" value="28 años">
+        </div>
+        <div class="mb-3">
+            <label class="label" for="floatingInputValue2">Dni</label>
+            <input type="number" formControlName="dni" class="form-control form-control1 fondo-oscuro text-white borde-editar2" id="floatingInputValue23" placeholder="Tu Dni" value="28 años">
+        </div>
+        <div class="mb-3">
+            <label class="label" for="floatingInputValue2">Contraseña</label>
+            <input type="text" formControlName="contrasena" class="form-control form-control1 fondo-oscuro text-white borde-editar2" id="floatingInputValue23" placeholder="Tu Contraseña" value="28 años">
+        </div>
+        <div class="mb-3">
+            <label class="label" for="floatingInputValue2">Especialidad</label>
+            <select formControlName="especialidad" class="form-control form-control1 fondo-oscuro text-white borde-editar2" id="floatingInputValue24">
+                <option value="">Seleccionar especialidad</option>
+                <option value="Musculación">Musculación</option>
+                <option value="Cardio">Cardio</option>
+                <option value="Yoga">Yoga</option>
+                <option value="Pilates">Pilates</option>
+                <option value="Crossfit">Crossfit</option>
+                <option value="Boxeo">Boxeo</option>
+                <option value="Natación">Natación</option>
+                <option value="Spinning">Spinning</option>
+                <option value="Funcional">Funcional</option>
+                <option value="Rehabilitación">Rehabilitación</option>
+            </select>
+        </div>
+        
+
+
+        
+        <div class="d-grid d-flex justify-content-center p-3 mt-5 mb-5">
+            <button type="submit" class="btn button-login p-2 w-50 btn-crear-alumno">Crear Profesor</button>
+        </div>
+    
+    </form>
+
+
+
+    
+
+
+</div>
+<app-footer></app-footer>
