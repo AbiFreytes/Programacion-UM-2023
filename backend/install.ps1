@@ -1,0 +1,4 @@
+# Ejecutar en PowerShell: .\\install.ps1
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
