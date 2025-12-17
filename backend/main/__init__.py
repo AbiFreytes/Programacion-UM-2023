@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from flask import Flask
 from dotenv import load_dotenv
@@ -35,13 +36,17 @@ def create_app():
     load_dotenv()
 
     #Si no existe el archivo de base de datos crearlo (solo válido si se utiliza SQLite)
-    if not os.path.exists(os.getenv('DATABASE_PATH')+os.getenv('DATABASE_NAME')):
-        os.mknod(os.getenv('DATABASE_PATH')+os.getenv('DATABASE_NAME'))
+    database_path = Path(os.getenv('DATABASE_PATH', '')).expanduser()
+    database_name = os.getenv('DATABASE_NAME', '')
+    database_file = (database_path / database_name).resolve()
+
+    database_file.parent.mkdir(parents=True, exist_ok=True)
+    database_file.touch(exist_ok=True)
 
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Url de configuración de base de datos
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////'+os.getenv('DATABASE_PATH')+os.getenv('DATABASE_NAME')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + database_file.as_posix()
 
     db.init_app(app)
 
@@ -51,7 +56,7 @@ def create_app():
     api.add_resource(resources.UsuariosResource, '/usuarios')
 
     api.add_resource(resources.UsuarioResource, '/usuario/<id>')
-    
+
     api.add_resource(resources.UsuarioActualResource, '/usuario/actual')
 
     api.add_resource(resources.UsuariosAlumnosResource, '/alumnos')
@@ -69,9 +74,9 @@ def create_app():
     api.add_resource(resources.ProfesorByUsuarioResource, '/profesor/usuario/<id_usuario>')
 
     api.add_resource(resources.PlanificacionesResource, '/planificaciones')
-    
+
     api.add_resource(resources.PlanificacionResource, '/planificaciones/<id>')
-    
+
     api.add_resource(resources.PlanificacionesByAlumnoResource, '/planificaciones/alumno/<id_alumno>')
 
     #Cargar la aplicacion en la API de Flask Restful
@@ -81,7 +86,7 @@ def create_app():
     #Cargar clave secreta
     app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY')
 
-    
+
     #Cargar tiempo de expiración de los tokens
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES'))
 
@@ -91,7 +96,7 @@ def create_app():
     #Importar blueprint
     app.register_blueprint(routes.auth)
 
-     #Configuración de mail
+    #Configuración de mail
     app.config['MAIL_HOSTNAME'] = os.getenv('MAIL_HOSTNAME')
     app.config['MAIL_SERVER'] = os.getenv('MAIL_SERVER')
     app.config['MAIL_PORT'] = os.getenv('MAIL_PORT')
