@@ -33,11 +33,26 @@ def create_app():
     app = Flask(__name__)
 
     #variables de entorno
-    load_dotenv()
+    env_path = Path(__file__).resolve().parent.parent / '.env'
+    load_dotenv(env_path)
 
     #Si no existe el archivo de base de datos crearlo (solo válido si se utiliza SQLite)
-    database_path = Path(os.getenv('DATABASE_PATH', '')).expanduser()
-    database_name = os.getenv('DATABASE_NAME', '')
+    default_db_dir = Path(__file__).resolve().parent
+
+    def _clean_env(value: str | None) -> str | None:
+        """Sanitize environment values: strip whitespace and treat blanks as missing."""
+
+        if value is None:
+            return None
+
+        trimmed = value.strip()
+        return trimmed or None
+
+    env_database_path = _clean_env(os.getenv('DATABASE_PATH'))
+    database_path = Path(env_database_path).expanduser() if env_database_path else default_db_dir
+
+    database_name = _clean_env(os.getenv('DATABASE_NAME')) or 'database.sqlite'
+
     database_file = (database_path / database_name).resolve()
 
     database_file.parent.mkdir(parents=True, exist_ok=True)
@@ -46,7 +61,7 @@ def create_app():
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Url de configuración de base de datos
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + database_file.as_posix()
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{database_file.as_posix()}"
 
     db.init_app(app)
 
@@ -101,6 +116,15 @@ def create_app():
     from main.auth import routes
     #Importar blueprint
     app.register_blueprint(routes.auth)
+
+    @app.route('/', methods=['GET'])
+    def healthcheck():
+        """Return a simple message so hitting the root URL doesn't 404."""
+
+        return {
+            "status": "ok",
+            "message": "Backend activo. Usa los endpoints /auth y /usuarios, etc.",
+        }, 200
 
     #Configuración de mail
     app.config['MAIL_HOSTNAME'] = os.getenv('MAIL_HOSTNAME')
